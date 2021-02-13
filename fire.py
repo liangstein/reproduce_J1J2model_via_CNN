@@ -20,14 +20,14 @@ site_number=int(L**2)
 if which_model_will_you_run=='singleCNN':
     model=singleCNN()
     sign_rule_switch=0
-    s_start = np.load('singleCNN/pre_hot_spin.npy')
-    with open('singleCNN/modelchk_singleCNN','rb') as f:
+    s_start = np.load('pre_spin_singleCNN.npy')
+    with open('modelchk_singleCNN','rb') as f:
         params_chk=pickle.load(f)
 else:
     model=MPSR_singleCNN()
     sign_rule_switch=1
-    s_start = np.load('MPSR_singleCNN/pre_hot_spin.npy')
-    with open('MPSR_singleCNN/modelchk_MPSRsingleCNN','rb') as f:
+    s_start = np.load('pre_spin_MPSRsingleCNN.npy')
+    with open('modelchk_MPSRsingleCNN','rb') as f:
         params_chk=pickle.load(f)
 
 #determine params shape
