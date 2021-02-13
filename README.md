@@ -1,2 +1,12 @@
 # reproduce_J1J2model_via_CNN
-This repository aims to reproduce the results in Physical Review B 98 (10), 104426 and Physical Review B 103 (3), 035138 using JFLAX and JAX
+This repository aims to reproduce the results in Physical Review B 98 (10), 104426 and Physical Review B 103 (3), 035138 using FLAX and JAX
+
+## dependency
+Python 3.8
+JAX 0.2.9 and FLAX 0.3.0
+numba 0.52.0
+
+## Motivation
+There has been increasing interest in applying neural networks as variational ansatz for solving complex quantum many-particle system, such as solving the frustrated J1-J2 Heisenberg model. Based on previous success trails, with the help of PyTorch, here I have re-written the MCMC program via JAX and FLAX. Therefore one can easily check the ground state energies, within the competitive performance of JAX.
+
+Now I have verified the results for single layer CNN. I am still confusing with converting PyTorch weights to FLAX weights, for deep CNN. 
