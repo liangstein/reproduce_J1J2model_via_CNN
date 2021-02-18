@@ -1,5 +1,6 @@
 import jax,jax.numpy as jp
 from numba import njit
+from jax import jit
 import numpy as np
 
 #lattice is 10x10
@@ -41,17 +42,21 @@ def make_PBC_spin_lattice(spin_lattice):
     return PBC #[batchsize,L+K-1,L+K-1]
 
 
+@jit
+def rot90(s):
+    s=s.reshape((len(s),L+K-1,L+K-1,1))
+    s1=jp.array(s)
+    s2=jp.rot90(s1,1,axes=(1,2))
+    s3=jp.rot90(s1,2,axes=(1,2))
+    s4=jp.rot90(s1,3,axes=(1,2))
+    return s1,s2,s3,s4
+
 
 def WS_CALCULATE(spin_lattice, model, params, sign_rule_switch):
-    s_1=make_PBC_spin_lattice(spin_lattice.reshape(1,L,L))
-    spin_input_1=s_1.reshape((1, L+K-1, L+K-1,1))
-    spin_input_2=np.rot90(spin_input_1,1,axes=(1,2))
-    spin_input_3=np.rot90(spin_input_1,2,axes=(1,2))
-    spin_input_4=np.rot90(spin_input_1,3,axes=(1,2))
-    ws = model.apply(params,jp.array(spin_input_1),
-                     jp.array(spin_input_2),
-                     jp.array(spin_input_3),
-                     jp.array(spin_input_4)).squeeze()*sign_rule(spin_lattice,sign_rule_switch)
+    s=make_PBC_spin_lattice(spin_lattice.reshape(1,L,L))
+    s1=s.reshape((1, L+K-1, L+K-1,1))
+    s1,s2,s3,s4=rot90(s1)
+    ws = model.apply(params,s1,s2,s3,s4).squeeze()*sign_rule(spin_lattice,sign_rule_switch)
     del params,model
     return ws
 
@@ -147,14 +152,9 @@ def calculate_local_energy(ws, spin_lattice, model, params, sample_option, sign_
             batchsize=len(propose_batch)
             s_prime=make_s_prime(spin_lattice,propose_batch) # [batchsize,L,L]
             s_prime_PBC=make_PBC_spin_lattice(s_prime) #[batchsize,L+K-1,L+K-1]
-            spin_input_1=s_prime_PBC.reshape((batchsize,L+K-1,L+K-1,1))
-            spin_input_2=np.rot90(spin_input_1,1,axes=(1,2))
-            spin_input_3=np.rot90(spin_input_1,2,axes=(1,2))
-            spin_input_4=np.rot90(spin_input_1,3,axes=(1,2))
-            ws_1_batch=model.apply(params,jp.array(spin_input_1),
-                     jp.array(spin_input_2),
-                     jp.array(spin_input_3),
-                     jp.array(spin_input_4)).squeeze()
+            s1=s_prime_PBC.reshape((batchsize,L+K-1,L+K-1,1))
+            s1,s2,s3,s4=rot90(s1)
+            ws_1_batch=model.apply(params,s1,s2,s3,s4).squeeze()
             sign_batch=jp.array([sign_rule(s,sign_rule_switch) for s in s_prime])
             ws_1_batch = ws_1_batch*sign_batch
             E_s += (2 / ws) * (jp.sum(ws_1_batch[:s1length]) + J2 * jp.sum(ws_1_batch[s1length:]))
